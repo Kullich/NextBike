@@ -59,6 +59,58 @@ $stations = $stationManager->getStations($search, $minBikes);
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        function fetchData() {
+        const searchValue = document.querySelector('input[name="search"]').value;
+        const minBikesValue = document.querySelector('input[name="min_bikes"]').value;
+
+        fetch(`update.php?search=${encodeURIComponent(searchValue)}&min_bikes=${encodeURIComponent(minBikesValue)}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('tbody');
+                tableBody.innerHTML = '';
+
+                data.forEach(station => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="border px-4 py-2">${station.station_name}</td>
+                        <td class="border px-4 py-2 text-center">${station.available_bikes}</td>
+                        <td class="border px-4 py-2">${station.latitude}, ${station.longitude}</td>
+                        <td class="border px-4 py-2">${station.timestamp}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Chyba při načítání dat:', error));
+        }
+        /*function fetchData() {
+            fetch('update.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Vymaže aktuální data
+                    const tableBody = document.querySelector('tbody');
+                    tableBody.innerHTML = '';
+
+                    // Přidá nová data do tabulky
+                    data.forEach(station => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="border px-4 py-2">${station.station_name}</td>
+                            <td class="border px-4 py-2">${station.available_bikes}</td>
+                            <td class="border px-4 py-2">${station.latitude}, ${station.longitude}</td>
+                            <td class="border px-4 py-2">${station.timestamp}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }*/
+
+        // Aktualizace dat každých 10 minut
+        setInterval(fetchData, 300000); // 600000 ms = 10 minut
+
+        // Načte data při prvním zobrazení stránky
+        fetchData();
+
+
         // Inicializace mapy
         var map = L.map('map').setView([49.2235, 17.6658], 13);
 
@@ -93,8 +145,8 @@ $stations = $stationManager->getStations($search, $minBikes);
         showStations(0);
 
         // Při odeslání filtru
-            const minBikes = document.getElementById('min-bikes').value;
-            showStations(minBikes);
+        const minBikes = document.getElementById('min-bikes').value;
+        showStations(minBikes);
     </script>
 </script>
 
